@@ -4,6 +4,7 @@ import SiteInfoService from '@/service/webSettings/siteInfoService';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import Skeleton from 'primevue/skeleton';
+import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
 
 const info = ref({
@@ -24,6 +25,15 @@ const permissions = ref({
     can_update: false,
     can_delete: false
 });
+const isSubmitted = ref(false);
+const siteNameError = ref(false);
+const phoneError = ref(false);
+const emailError = ref(false);
+const addressError = ref(false);
+const descriptionError = ref(false);
+
+const toast = useToast();
+
 function delay(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -78,7 +88,36 @@ function handleFileChange(event, type) {
     }
 }
 
+function validateForm() {
+    isSubmitted.value = true;
+    siteNameError.value = !info.value.site_name.trim();
+    phoneError.value = !info.value.phone.trim();
+    emailError.value = !info.value.contact_email.trim() || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(info.value.contact_email);
+    addressError.value = !info.value.address.trim();
+    descriptionError.value = !info.value.site_description.trim();
+    return !siteNameError.value && !phoneError.value && !emailError.value && !addressError.value && !descriptionError.value;
+}
+
+function clearError(field) {
+    if (isSubmitted.value) {
+        if (field === 'site_name') siteNameError.value = false;
+        if (field === 'phone') phoneError.value = false;
+        if (field === 'contact_email') emailError.value = false;
+        if (field === 'address') addressError.value = false;
+        if (field === 'site_description') descriptionError.value = false;
+    }
+}
+
 async function saveInfo() {
+    if (!validateForm()) {
+        toast.add({
+            severity: 'error',
+            summary: 'Validation Failed',
+            detail: 'Please fill in all required fields correctly.',
+            life: 4000
+        });
+        return;
+    }
     try {
         loading.value = true;
 
@@ -123,7 +162,7 @@ onMounted(() => {
                         <Skeleton height="2rem" width="100%" borderRadius="8px" />
                     </template>
                     <template v-else>
-                        <InputText v-model="info.site_name" class="w-full" />
+                        <InputText v-model="info.site_name" placeholder="Enter site name" class="w-full" :class="{ 'p-invalid': siteNameError }" @input="() => clearError('site_name')" />
                     </template>
                 </div>
                 <div class="w-1/2">
@@ -132,7 +171,7 @@ onMounted(() => {
                         <Skeleton height="2rem" width="100%" borderRadius="8px" />
                     </template>
                     <template v-else>
-                        <InputText v-model="info.phone" class="w-full" />
+                        <InputText v-model="info.phone" placeholder="Enter phone number" class="w-full" :class="{ 'p-invalid': phoneError }" @input="() => clearError('phone')" type="number" />
                     </template>
                 </div>
             </div>
@@ -144,7 +183,7 @@ onMounted(() => {
                         <Skeleton height="2rem" width="100%" borderRadius="8px" />
                     </template>
                     <template v-else>
-                        <InputText v-model="info.contact_email" class="w-full" />
+                        <InputText v-model="info.contact_email" placeholder="Enter email" class="w-full" :class="{ 'p-invalid': emailError }" @input="() => clearError('contact_email')" type="email" />
                     </template>
                 </div>
                 <div class="w-1/2">
@@ -153,7 +192,7 @@ onMounted(() => {
                         <Skeleton height="2rem" width="100%" borderRadius="8px" />
                     </template>
                     <template v-else>
-                        <InputText v-model="info.address" class="w-full" />
+                        <InputText v-model="info.address" placeholder="Enter address" class="w-full" :class="{ 'p-invalid': addressError }" @input="() => clearError('address')" />
                     </template>
                 </div>
             </div>
@@ -164,7 +203,7 @@ onMounted(() => {
                     <Skeleton height="2rem" width="100%" borderRadius="8px" />
                 </template>
                 <template v-else>
-                    <InputText v-model="info.site_description" class="w-full" />
+                    <InputText v-model="info.site_description" placeholder="Enter description" class="w-full" :class="{ 'p-invalid': descriptionError }" @input="() => clearError('site_description')" />
                 </template>
             </div>
 
