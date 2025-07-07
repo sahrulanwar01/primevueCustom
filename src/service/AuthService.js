@@ -1,0 +1,35 @@
+// C:\Users\sst_i\Downloads\sourcode\template\sakai-vue-master\src\service\AuthService.js\
+import { apiClient } from '@/service/config';
+
+const AuthService = {
+    async login(email, password) {
+        const response = await apiClient.post('/auth/login', { email, password }, { withCredentials: true });
+        return response.data;
+    },
+    async me() {
+        try {
+            const response = await apiClient.get('/auth/me', { withCredentials: true });
+            console.log('response ME', response);
+            return response.data; // ✅ KEMBALIKAN DATA, BUKAN BOOLEAN
+        } catch (e) {
+            console.error('Error in AuthService.me():', e);
+            return null;
+        }
+    },
+    // async me() {
+    //     try {
+    //         const response = await axios.get(`${config.API_BASE_URL}/auth/me`, { withCredentials: true });
+    //         console.log('response ME', response);
+    //         return response.status === 200;
+    //     } catch (e) {
+    //         return false;
+    //     }
+    // },
+    async logout(token) {
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const response = await apiClient.post('/auth/logout', {}, { headers, withCredentials: true });
+        return response.data;
+    }
+};
+
+export default AuthService;

@@ -1,0 +1,18 @@
+/* You can add global styles to this file, and also import other style files */
+@use 'primeicons/primeicons.css';
+@use '@/assets/tailwind.css';
+@use '@/assets/layout/layout.scss';
+@use '@/assets/demo/demo.scss';
+@use '@/assets/demo/profile.scss';
+
+/* Global DataTable Header Styling */
+// .p-datatable-thead > tr > th {
+//     background-color: #f3f4f6 !important;
+//     color: #374151 !important;
+//     font-weight: 600 !important;
+//     border-bottom: 1px solid #d1d5db !important;
+// }
+
+// .p-datatable-thead > tr > th:hover {
+//     background-color: #e5e7eb !important;
+// }
