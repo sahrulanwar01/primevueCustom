@@ -62,6 +62,23 @@ const originalMenu = [
                         to: '/website-settings/site-info'
                     }
                 ]
+            },
+            {
+                label: 'General Settings',
+                icon: 'pi pi-cog',
+                to: '/general-settings',
+                items: [
+                    {
+                        label: 'Permissions',
+                        icon: 'pi pi-circle-off',
+                        to: '/general-settings/permissions'
+                    },
+                    {
+                        label: 'Role Permissions',
+                        icon: 'pi pi-circle-off',
+                        to: '/general-settings/role-permissions'
+                    }
+                ]
             }
         ]
     }

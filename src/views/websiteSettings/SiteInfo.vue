@@ -153,7 +153,7 @@ onMounted(() => {
 
 <template>
     <div class="card">
-        <h4 class="mb-4">Site Information</h4>
+        <h4 class="mb-10">Site Information</h4>
         <div>
             <div class="flex gap-4 mb-3">
                 <div class="w-1/2">

@@ -65,7 +65,7 @@ function renderIcon(breadcrumb) {
 
 .breadcrumb-icon {
     margin-right: 0.5rem;
-    font-size: 0.75rem;
+    font-size: 1rem;
 }
 
 .breadcrumb-separator {

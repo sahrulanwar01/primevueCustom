@@ -124,6 +124,7 @@ const router = createRouter({
                 }
             ]
         },
+        // Website Settings
         {
             path: '/website-settings',
             name: 'website-settings',
@@ -134,6 +135,27 @@ const router = createRouter({
                     path: 'site-info',
                     name: 'website-settings-site-info',
                     component: () => import('@/views/websiteSettings/SiteInfo.vue'),
+                    meta: { requiresAuth: true }
+                }
+            ]
+        },
+        // General Settings
+        {
+            path: '/general-settings',
+            name: 'general-settings',
+            component: AppLayout,
+            meta: { requiresAuth: true },
+            children: [
+                {
+                    path: 'permissions',
+                    name: 'general-settings-permissions',
+                    component: () => import('@/views/generalSettings/permissions.vue'),
+                    meta: { requiresAuth: true }
+                },
+                {
+                    path: 'role-permissions',
+                    name: 'general-settings-role-permissions',
+                    component: () => import('@/views/generalSettings/rolePermissions.vue'),
                     meta: { requiresAuth: true }
                 }
             ]
