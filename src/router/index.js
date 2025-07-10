@@ -157,6 +157,18 @@ const router = createRouter({
                     name: 'general-settings-role-permissions',
                     component: () => import('@/views/generalSettings/rolePermissions.vue'),
                     meta: { requiresAuth: true }
+                },
+                {
+                    path: 'mail-config',
+                    name: 'general-settings-mail-config',
+                    component: () => import('@/views/generalSettings/mailConfig.vue'),
+                    meta: { requiresAuth: true }
+                },
+                {
+                    path: 'loggings',
+                    name: 'general-settings-loggings',
+                    component: () => import('@/views/generalSettings/loggings.vue'),
+                    meta: { requiresAuth: true }
                 }
             ]
         }

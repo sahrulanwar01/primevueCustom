@@ -9,7 +9,7 @@ const AuthService = {
     async me() {
         try {
             const response = await apiClient.get('/auth/me', { withCredentials: true });
-            console.log('response ME', response);
+            // console.log('response ME', response);
             return response.data; // ✅ KEMBALIKAN DATA, BUKAN BOOLEAN
         } catch (e) {
             console.error('Error in AuthService.me():', e);

@@ -77,6 +77,16 @@ const originalMenu = [
                         label: 'Role Permissions',
                         icon: 'pi pi-circle-off',
                         to: '/general-settings/role-permissions'
+                    },
+                    {
+                        label: 'Mail Config',
+                        icon: 'pi pi-circle-off',
+                        to: '/general-settings/mail-config'
+                    },
+                    {
+                        label: 'Loggings',
+                        icon: 'pi pi-circle-off',
+                        to: '/general-settings/loggings'
                     }
                 ]
             }

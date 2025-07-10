@@ -1,6 +1,6 @@
 {
-    "name": "sakai-vue",
-    "version": "4.3.0",
+    "name": "cobong-vue",
+    "version": "1.0.0",
     "scripts": {
         "dev": "vite",
         "build": "vite build",
