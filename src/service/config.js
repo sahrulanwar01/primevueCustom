@@ -15,13 +15,19 @@ const apiClient = axios.create({
     }
 });
 
-// Request interceptor untuk menambahkan token
+// Request interceptor untuk menambahkan token dan menangani FormData
 apiClient.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+
+        // Jika data adalah FormData, hapus Content-Type agar browser set otomatis
+        if (config.data instanceof FormData) {
+            delete config.headers['Content-Type'];
+        }
+
         return config;
     },
     (error) => {

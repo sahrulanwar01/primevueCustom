@@ -101,6 +101,12 @@ const router = createRouter({
                     name: 'roles',
                     component: () => import('@/views/userManagement/roles.vue'),
                     meta: { requiresAuth: true }
+                },
+                {
+                    path: 'users',
+                    name: 'user-management-users',
+                    component: () => import('@/views/userManagement/users.vue'),
+                    meta: { requiresAuth: true }
                 }
             ]
         },

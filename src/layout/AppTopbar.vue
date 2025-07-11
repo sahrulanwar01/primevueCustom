@@ -2,6 +2,7 @@
 <script setup>
 import { useLayout } from '@/layout/composables/layout';
 import AuthService from '@/service/AuthService';
+import config from '@/service/config';
 import { onMounted, onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import AppConfigurator from './AppConfigurator.vue';
@@ -52,14 +53,39 @@ const handleLogout = async () => {
     closeProfileDropdown();
 };
 
-// Add event listeners
-onMounted(() => {
+const user = ref(null);
+const userPhotoError = ref(false);
+
+onMounted(async () => {
     document.addEventListener('click', handleClickOutside);
+    // Ambil data user saat Topbar mount
+    try {
+        const response = await AuthService.me();
+        user.value = response?.data?.user || null;
+    } catch (e) {
+        user.value = null;
+    }
 });
 
 onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside);
 });
+
+function getUserPhotoUrl() {
+    if (userPhotoError.value || !user.value?.photo) {
+        return '/demo/images/default.jpg';
+    }
+    // Jika path sudah absolute
+    if (user.value.photo.startsWith('http')) {
+        return user.value.photo;
+    }
+    // Jika relative, tambahkan baseURL backend dari config
+    return config.API_BASE_URL + user.value.photo;
+}
+
+function onUserPhotoError() {
+    userPhotoError.value = true;
+}
 </script>
 
 <template>
@@ -108,12 +134,7 @@ onUnmounted(() => {
                     <!-- Profile Dropdown -->
                     <div class="relative" ref="profileDropdownRef">
                         <button ref="profileButtonRef" type="button" class="layout-topbar-action profile-dropdown-trigger" @click="toggleProfileDropdown">
-                            <img
-                                src="/demo/images/avatar.svg"
-                                alt="Profile"
-                                class="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm hover:border-blue-300 transition-colors duration-200"
-                                onerror="this.src='https://via.placeholder.com/32x32/6B7280/FFFFFF?text=U'"
-                            />
+                            <img :src="getUserPhotoUrl()" alt="Profile" class="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm hover:border-blue-300 transition-colors duration-200" @error="onUserPhotoError" />
                         </button>
 
                         <!-- Profile Dropdown Menu -->

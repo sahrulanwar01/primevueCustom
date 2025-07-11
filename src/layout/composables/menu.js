@@ -28,6 +28,11 @@ const originalMenu = [
                 to: '/user-management',
                 items: [
                     {
+                        label: 'List Users',
+                        icon: 'pi pi-circle-off',
+                        to: '/user-management/users'
+                    },
+                    {
                         label: 'Role',
                         icon: 'pi pi-circle-off',
                         to: '/user-management/roles'
