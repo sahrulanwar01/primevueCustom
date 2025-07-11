@@ -405,24 +405,6 @@ function onPhotoSelect(event) {
     }
 }
 
-function onEditPhotoSelect(event) {
-    const file = event.files && event.files[0];
-    if (file) {
-        // Simpan File object langsung untuk dikirim ke backend
-        editForm.value.photo = file;
-
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            editPhotoPreview.value = e.target.result;
-            await nextTick();
-            Fancybox.bind('[data-fancybox="edit-preview"]', {
-                groupAll: false
-            });
-        };
-        reader.readAsDataURL(file);
-    }
-}
-
 function onEditPhotoChange(event) {
     const file = event.target.files && event.target.files[0];
     if (file) {

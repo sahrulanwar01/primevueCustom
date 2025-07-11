@@ -1,8 +1,25 @@
-<script setup></script>
+<script setup>
+import { useSiteInfoStore } from '@/stores/siteInfoStore';
+import { storeToRefs } from 'pinia';
+import { computed, onMounted } from 'vue';
+
+const siteInfoStore = useSiteInfoStore();
+const { getSiteName } = storeToRefs(siteInfoStore);
+
+onMounted(() => {
+    if (!siteInfoStore.siteInfo) {
+        siteInfoStore.fetchSiteInfo();
+    }
+});
+
+const currentYear = new Date().getFullYear();
+const copyrightText = computed(() => {
+    return `© ${currentYear} ${getSiteName.value || ''}`;
+});
+</script>
 
 <template>
     <div class="layout-footer">
-        SAKAI by
-        <a href="https://primevue.org" target="_blank" rel="noopener noreferrer" class="text-primary font-bold hover:underline">CobongCoding</a>
+        <span>{{ copyrightText }}</span>
     </div>
 </template>

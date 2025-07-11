@@ -134,7 +134,7 @@ function onUserPhotoError() {
                     <!-- Profile Dropdown -->
                     <div class="relative" ref="profileDropdownRef">
                         <button ref="profileButtonRef" type="button" class="layout-topbar-action profile-dropdown-trigger" @click="toggleProfileDropdown">
-                            <img :src="getUserPhotoUrl()" alt="Profile" class="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm hover:border-blue-300 transition-colors duration-200" @error="onUserPhotoError" />
+                            <img :src="getUserPhotoUrl()" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm hover:border-blue-300 transition-colors duration-200" @error="onUserPhotoError" />
                         </button>
 
                         <!-- Profile Dropdown Menu -->

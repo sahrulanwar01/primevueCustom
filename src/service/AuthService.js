@@ -16,15 +16,10 @@ const AuthService = {
             return null;
         }
     },
-    // async me() {
-    //     try {
-    //         const response = await axios.get(`${config.API_BASE_URL}/auth/me`, { withCredentials: true });
-    //         console.log('response ME', response);
-    //         return response.status === 200;
-    //     } catch (e) {
-    //         return false;
-    //     }
-    // },
+    async updateMyProfile(payload) {
+        const response = await apiClient.patch('/users', payload, { withCredentials: true });
+        return response.data;
+    },
     async logout(token) {
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
         const response = await apiClient.post('/auth/logout', {}, { headers, withCredentials: true });
