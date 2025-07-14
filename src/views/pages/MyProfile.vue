@@ -98,6 +98,25 @@
                     </template>
                 </div>
                 <div class="w-1/2">
+                    <label class="font-bold block mb-2">Province<span class="text-red-500">*</span></label>
+                    <template v-if="loading">
+                        <Skeleton height="2rem" width="100%" borderRadius="8px" />
+                    </template>
+                    <template v-else>
+                        <AutoComplete
+                            v-model="profile.province"
+                            :suggestions="provinceSuggestions"
+                            optionLabel="label"
+                            placeholder="Search and select province"
+                            :loading="provinceLoading"
+                            @complete="searchProvince"
+                            :inputClass="{ 'p-invalid': provinceError }"
+                            @input="() => clearError('province')"
+                            fluid
+                        />
+                    </template>
+                </div>
+                <!-- <div class="w-1/2">
                     <label class="font-bold block mb-2">Password</label>
                     <template v-if="loading">
                         <Skeleton height="2rem" width="100%" borderRadius="8px" />
@@ -105,6 +124,76 @@
                     <template v-else>
                         <Password v-model="security.newPassword" toggleMask placeholder="Enter new password" class="w-full" :class="{ 'p-invalid': newPasswordError }" @input="() => clearError('newPassword')" fluid />
                         <small class="text-500 block mt-2">Isi Jika ingin mengubah password</small>
+                    </template>
+                </div> -->
+            </div>
+            <div class="flex gap-4 mb-3">
+                <div class="w-1/2">
+                    <label class="font-bold block mb-2">City<span class="text-red-500">*</span></label>
+                    <template v-if="loading">
+                        <Skeleton height="2rem" width="100%" borderRadius="8px" />
+                    </template>
+                    <template v-else>
+                        <AutoComplete
+                            v-model="profile.city"
+                            :suggestions="citySuggestions"
+                            optionLabel="label"
+                            placeholder="Search and select city"
+                            :loading="cityLoading"
+                            @complete="searchCity"
+                            :inputClass="{ 'p-invalid': cityError }"
+                            @input="() => clearError('city')"
+                            fluid
+                        />
+                    </template>
+                </div>
+                <div class="w-1/2">
+                    <label class="font-bold block mb-2">District<span class="text-red-500">*</span></label>
+                    <template v-if="loading">
+                        <Skeleton height="2rem" width="100%" borderRadius="8px" />
+                    </template>
+                    <template v-else>
+                        <AutoComplete
+                            v-model="profile.district"
+                            :suggestions="districtSuggestions"
+                            optionLabel="label"
+                            placeholder="Search and select district"
+                            :loading="districtLoading"
+                            @complete="searchDistrict"
+                            :inputClass="{ 'p-invalid': districtError }"
+                            @input="() => clearError('district')"
+                            fluid
+                        />
+                    </template>
+                </div>
+            </div>
+            <div class="flex gap-4 mb-3">
+                <div class="w-1/2">
+                    <label class="font-bold block mb-2">Village<span class="text-red-500">*</span></label>
+                    <template v-if="loading">
+                        <Skeleton height="2rem" width="100%" borderRadius="8px" />
+                    </template>
+                    <template v-else>
+                        <AutoComplete
+                            v-model="profile.village"
+                            :suggestions="villageSuggestions"
+                            optionLabel="label"
+                            placeholder="Search and select village"
+                            :loading="villageLoading"
+                            @complete="searchVillage"
+                            :inputClass="{ 'p-invalid': villageError }"
+                            @input="() => clearError('village')"
+                            fluid
+                        />
+                    </template>
+                </div>
+                <div class="w-1/2">
+                    <label class="font-bold block mb-2">Full Address<span class="text-red-500">*</span></label>
+                    <template v-if="loading">
+                        <Skeleton height="2rem" width="100%" borderRadius="8px" />
+                    </template>
+                    <template v-else>
+                        <InputText v-model="profile.full_address" placeholder="Enter your full address" class="w-full" :class="{ 'p-invalid': fullAddressError }" @input="() => clearError('fullAddress')" />
                     </template>
                 </div>
             </div>
@@ -135,15 +224,16 @@ import AuthService from '@/service/AuthService';
 import config from '@/service/config';
 import { Fancybox } from '@fancyapps/ui';
 import '@fancyapps/ui/dist/fancybox/fancybox.css';
+import axios from 'axios'; // Added axios import
+import AutoComplete from 'primevue/autocomplete';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
 import Dropdown from 'primevue/dropdown';
 import FileUpload from 'primevue/fileupload';
 import InputText from 'primevue/inputtext';
-import Password from 'primevue/password';
 import Skeleton from 'primevue/skeleton';
 import { useToast } from 'primevue/usetoast';
-import { nextTick, onMounted, ref } from 'vue';
+import { nextTick, onMounted, ref, watch } from 'vue';
 
 const toast = useToast();
 
@@ -154,7 +244,12 @@ const profile = ref({
     phone: '',
     photo: '',
     email: '',
-    status: ''
+    status: '',
+    province: '',
+    city: '',
+    district: '',
+    village: '',
+    full_address: ''
 });
 
 // Role data
@@ -187,6 +282,22 @@ const phoneError = ref(false);
 const statusError = ref(false);
 const currentPasswordError = ref(false);
 const newPasswordError = ref(false);
+const provinceError = ref(false);
+const cityError = ref(false);
+const districtError = ref(false);
+const villageError = ref(false);
+const fullAddressError = ref(false);
+
+// Location suggestions states
+const provinceSuggestions = ref([]);
+const provinceLoading = ref(false);
+const citySuggestions = ref([]);
+const cityLoading = ref(false);
+const districtSuggestions = ref([]);
+const districtLoading = ref(false);
+const villageSuggestions = ref([]);
+const villageLoading = ref(false);
+const isLoadingExistingData = ref(false);
 
 // Avatar preview
 const avatarPreview = ref('');
@@ -196,6 +307,138 @@ const selectedAvatarPreview = ref('');
 
 function delay(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Location search functions
+async function searchProvince(event) {
+    const query = event.query?.toLowerCase() || '';
+    provinceLoading.value = true;
+    try {
+        const res = await axios.get('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json');
+        let provinces = res.data || [];
+        if (query) {
+            provinces = provinces.filter((p) => p.name.toLowerCase().includes(query));
+        }
+        provinceSuggestions.value = provinces.map((p) => ({ label: p.name, value: p.name, id: p.id }));
+    } catch (e) {
+        provinceSuggestions.value = [];
+    } finally {
+        provinceLoading.value = false;
+    }
+}
+
+async function searchCity(event) {
+    const query = event.query?.toLowerCase() || '';
+    cityLoading.value = true;
+    try {
+        // Ambil province yang dipilih
+        const selectedProvince = profile.value.province;
+        if (!selectedProvince || !selectedProvince.id) {
+            citySuggestions.value = [];
+            return;
+        }
+
+        const res = await axios.get(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${selectedProvince.id}.json`);
+        let cities = res.data || [];
+        if (query) {
+            cities = cities.filter((c) => c.name.toLowerCase().includes(query));
+        }
+        citySuggestions.value = cities.map((c) => ({ label: c.name, value: c.name, id: c.id }));
+    } catch (e) {
+        citySuggestions.value = [];
+    } finally {
+        cityLoading.value = false;
+    }
+}
+
+async function searchDistrict(event) {
+    const query = event.query?.toLowerCase() || '';
+    districtLoading.value = true;
+    try {
+        // Ambil city yang dipilih
+        const selectedCity = profile.value.city;
+        if (!selectedCity || !selectedCity.id) {
+            districtSuggestions.value = [];
+            return;
+        }
+
+        const res = await axios.get(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${selectedCity.id}.json`);
+        let districts = res.data || [];
+        if (query) {
+            districts = districts.filter((d) => d.name.toLowerCase().includes(query));
+        }
+        districtSuggestions.value = districts.map((d) => ({ label: d.name, value: d.name, id: d.id }));
+    } catch (e) {
+        districtSuggestions.value = [];
+    } finally {
+        districtLoading.value = false;
+    }
+}
+
+async function searchVillage(event) {
+    const query = event.query?.toLowerCase() || '';
+    villageLoading.value = true;
+    try {
+        // Ambil district yang dipilih
+        const selectedDistrict = profile.value.district;
+        if (!selectedDistrict || !selectedDistrict.id) {
+            villageSuggestions.value = [];
+            return;
+        }
+
+        const res = await axios.get(`https://www.emsifa.com/api-wilayah-indonesia/api/villages/${selectedDistrict.id}.json`);
+        let villages = res.data || [];
+        if (query) {
+            villages = villages.filter((v) => v.name.toLowerCase().includes(query));
+        }
+        villageSuggestions.value = villages.map((v) => ({ label: v.name, value: v.name, id: v.id }));
+    } catch (e) {
+        villageSuggestions.value = [];
+    } finally {
+        villageLoading.value = false;
+    }
+}
+
+async function loadExistingLocationData(userData) {
+    try {
+        // Load province data
+        const provinceRes = await axios.get('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json');
+        const provinces = provinceRes.data || [];
+        const province = provinces.find((p) => p.name === userData.province);
+        if (province) {
+            // Set province tanpa memicu watcher
+            profile.value.province = { label: province.name, value: province.name, id: province.id };
+
+            // Load city data
+            const cityRes = await axios.get(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${province.id}.json`);
+            const cities = cityRes.data || [];
+            const city = cities.find((c) => c.name === userData.city);
+            if (city) {
+                // Set city tanpa memicu watcher
+                profile.value.city = { label: city.name, value: city.name, id: city.id };
+
+                // Load district data
+                const districtRes = await axios.get(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${city.id}.json`);
+                const districts = districtRes.data || [];
+                const district = districts.find((d) => d.name === userData.district);
+                if (district) {
+                    // Set district tanpa memicu watcher
+                    profile.value.district = { label: district.name, value: district.name, id: district.id };
+
+                    // Load village data
+                    const villageRes = await axios.get(`https://www.emsifa.com/api-wilayah-indonesia/api/villages/${district.id}.json`);
+                    const villages = villageRes.data || [];
+                    const village = villages.find((v) => v.name === userData.village);
+                    if (village) {
+                        // Set village tanpa memicu watcher
+                        profile.value.village = { label: village.name, value: village.name, id: village.id };
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error loading existing location data:', error);
+    }
 }
 
 // Load profile data from API
@@ -219,6 +462,13 @@ async function loadProfileData() {
                     avatarPreview.value = config.API_BASE_URL + profile.value.photo;
                 }
             }
+
+            // Load existing location data if available
+            if (profile.value.province && profile.value.city && profile.value.district && profile.value.village) {
+                isLoadingExistingData.value = true;
+                await loadExistingLocationData(profile.value);
+                isLoadingExistingData.value = false;
+            }
         } else {
         }
 
@@ -236,7 +486,12 @@ function validateForm() {
     emailError.value = !profile.value.email.trim() || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(profile.value.email);
     phoneError.value = !profile.value.phone.trim();
     statusError.value = !profile.value.status;
-    return !nameError.value && !emailError.value && !phoneError.value && !statusError.value;
+    provinceError.value = !profile.value.province || !profile.value.province.value;
+    cityError.value = !profile.value.city || !profile.value.city.value;
+    districtError.value = !profile.value.district || !profile.value.district.value;
+    villageError.value = !profile.value.village || !profile.value.village.value;
+    fullAddressError.value = !profile.value.full_address.trim();
+    return !nameError.value && !emailError.value && !phoneError.value && !statusError.value && !provinceError.value && !cityError.value && !districtError.value && !villageError.value && !fullAddressError.value;
 }
 
 function validatePasswordForm() {
@@ -254,6 +509,11 @@ function clearError(field) {
         if (field === 'status') statusError.value = false;
         if (field === 'currentPassword') currentPasswordError.value = false;
         if (field === 'newPassword') newPasswordError.value = false;
+        if (field === 'province') provinceError.value = false;
+        if (field === 'city') cityError.value = false;
+        if (field === 'district') districtError.value = false;
+        if (field === 'village') villageError.value = false;
+        if (field === 'fullAddress') fullAddressError.value = false;
     }
 }
 
@@ -277,6 +537,11 @@ async function updateProfile() {
             formData.append('phone', profile.value.phone);
             formData.append('status', profile.value.status);
             formData.append('photo', profile.value.photo);
+            formData.append('province', profile.value.province?.value || profile.value.province);
+            formData.append('city', profile.value.city?.value || profile.value.city);
+            formData.append('district', profile.value.district?.value || profile.value.district);
+            formData.append('village', profile.value.village?.value || profile.value.village);
+            formData.append('full_address', profile.value.full_address);
 
             // Add password if provided
             if (hasNewPassword) {
@@ -290,7 +555,12 @@ async function updateProfile() {
                 name: profile.value.name,
                 email: profile.value.email,
                 phone: profile.value.phone,
-                status: profile.value.status
+                status: profile.value.status,
+                province: profile.value.province?.value || profile.value.province,
+                city: profile.value.city?.value || profile.value.city,
+                district: profile.value.district?.value || profile.value.district,
+                village: profile.value.village?.value || profile.value.village,
+                full_address: profile.value.full_address
             };
 
             // Add password if provided
@@ -391,6 +661,46 @@ onMounted(() => {
     Fancybox.bind('[data-fancybox="profile-avatar"]', { groupAll: false });
     Fancybox.bind('[data-fancybox="avatar-dialog"]', { groupAll: false });
 });
+
+// Watch untuk reset field ketika parent field berubah
+watch(
+    () => profile.value.province,
+    (newProvince, oldProvince) => {
+        // Hanya reset jika ada perubahan, bukan saat pertama kali load, dan bukan saat loading existing data
+        if (newProvince !== oldProvince && oldProvince !== undefined && oldProvince !== '' && !isLoadingExistingData.value) {
+            profile.value.city = '';
+            profile.value.district = '';
+            profile.value.village = '';
+            citySuggestions.value = [];
+            districtSuggestions.value = [];
+            villageSuggestions.value = [];
+        }
+    }
+);
+
+watch(
+    () => profile.value.city,
+    (newCity, oldCity) => {
+        // Hanya reset jika ada perubahan, bukan saat pertama kali load, dan bukan saat loading existing data
+        if (newCity !== oldCity && oldCity !== undefined && oldCity !== '' && !isLoadingExistingData.value) {
+            profile.value.district = '';
+            profile.value.village = '';
+            districtSuggestions.value = [];
+            villageSuggestions.value = [];
+        }
+    }
+);
+
+watch(
+    () => profile.value.district,
+    (newDistrict, oldDistrict) => {
+        // Hanya reset jika ada perubahan, bukan saat pertama kali load, dan bukan saat loading existing data
+        if (newDistrict !== oldDistrict && oldDistrict !== undefined && oldDistrict !== '' && !isLoadingExistingData.value) {
+            profile.value.village = '';
+            villageSuggestions.value = [];
+        }
+    }
+);
 </script>
 
 <style scoped>
