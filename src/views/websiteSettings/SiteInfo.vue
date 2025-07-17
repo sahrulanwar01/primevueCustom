@@ -1,6 +1,8 @@
 <script setup>
 import config from '@/service/config';
 import SiteInfoService from '@/service/webSettings/siteInfoService';
+import { Fancybox } from '@fancyapps/ui';
+import '@fancyapps/ui/dist/fancybox/fancybox.css';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import Skeleton from 'primevue/skeleton';
@@ -148,6 +150,7 @@ async function saveInfo() {
 
 onMounted(() => {
     fetchSiteInfo();
+    Fancybox.bind('[data-fancybox="siteinfo-img"]', { groupAll: false });
 });
 </script>
 
@@ -217,7 +220,9 @@ onMounted(() => {
                     <template v-else>
                         <input type="file" accept="image/*" class="form-control w-full mb-2" @change="(e) => handleFileChange(e, 'favicon')" />
                         <div v-if="faviconPreview" class="relative inline-block m-1">
-                            <img :src="faviconPreview" alt="Favicon Preview" class="hover-image" style="width: 70px; height: 70px; object-fit: cover; border-radius: 8px; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1)" />
+                            <a :href="faviconPreview" data-fancybox="siteinfo-img" data-caption="Favicon" tabindex="0">
+                                <img :src="faviconPreview" alt="Favicon Preview" class="hover-image" style="width: 70px; height: 70px; object-fit: cover; border-radius: 8px; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1)" />
+                            </a>
                         </div>
                     </template>
                 </div>
@@ -231,7 +236,9 @@ onMounted(() => {
                     <template v-else>
                         <input type="file" accept="image/*" class="form-control w-full mb-2" @change="(e) => handleFileChange(e, 'logo')" />
                         <div v-if="logoPreview" class="relative inline-block m-1">
-                            <img :src="logoPreview" alt="Logo Preview" class="hover-image" style="width: 70px; height: 70px; object-fit: cover; border-radius: 8px; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1)" />
+                            <a :href="logoPreview" data-fancybox="siteinfo-img" data-caption="Logo" tabindex="0">
+                                <img :src="logoPreview" alt="Logo Preview" class="hover-image" style="width: 70px; height: 70px; object-fit: cover; border-radius: 8px; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1)" />
+                            </a>
                         </div>
                     </template>
                 </div>

@@ -267,11 +267,21 @@ export function useMenu() {
             segments.forEach((segment, index) => {
                 currentPath += `/${segment}`;
                 const label = segment.charAt(0).toUpperCase() + segment.slice(1);
-                items.push({
-                    label: label,
-                    to: index === segments.length - 1 ? null : currentPath,
-                    icon: 'pi pi-fw pi-file'
-                });
+
+                // Khusus untuk MyProfile
+                if (currentPath === '/myProfile') {
+                    items.push({
+                        label: label,
+                        to: null,
+                        icon: 'pi pi-user'
+                    });
+                } else {
+                    items.push({
+                        label: label,
+                        to: index === segments.length - 1 ? null : currentPath,
+                        icon: 'pi pi-fw pi-file'
+                    });
+                }
             });
 
             return items;
