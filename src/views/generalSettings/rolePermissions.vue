@@ -69,6 +69,25 @@ const deleteLoading = ref(false);
 const rolePermissionToDelete = ref(null);
 const deleteError = ref('');
 
+// Tambahkan state error
+const roleError = ref(false);
+const permissionError = ref(false);
+const editRoleError = ref(false);
+const editPermissionError = ref(false);
+
+function clearRoleError() {
+    roleError.value = false;
+}
+function clearPermissionError() {
+    permissionError.value = false;
+}
+function clearEditRoleError() {
+    editRoleError.value = false;
+}
+function clearEditPermissionError() {
+    editPermissionError.value = false;
+}
+
 async function fetchRolePermissions() {
     loading.value = true;
     try {
@@ -122,6 +141,8 @@ function openCreateDialog() {
         can_details: false
     };
     createError.value = '';
+    roleError.value = false;
+    permissionError.value = false;
     showCreateDialog.value = true;
 }
 
@@ -154,7 +175,16 @@ async function searchPermission(event) {
 }
 
 async function submitCreateRolePermission() {
-    if (!createForm.value.role || !createForm.value.permission) {
+    let hasError = false;
+    if (!createForm.value.role) {
+        roleError.value = true;
+        hasError = true;
+    }
+    if (!createForm.value.permission) {
+        permissionError.value = true;
+        hasError = true;
+    }
+    if (hasError) {
         createError.value = 'Role dan Permission wajib diisi!';
         return;
     }
@@ -263,7 +293,16 @@ async function searchEditPermission(event) {
 }
 
 async function submitEditRolePermission() {
-    if (!editForm.value.role || !editForm.value.permission) {
+    let hasError = false;
+    if (!editForm.value.role) {
+        editRoleError.value = true;
+        hasError = true;
+    }
+    if (!editForm.value.permission) {
+        editPermissionError.value = true;
+        hasError = true;
+    }
+    if (hasError) {
         editError.value = 'Role dan Permission wajib diisi!';
         return;
     }
@@ -443,7 +482,19 @@ async function deleteRolePermission() {
                 <div class="flex flex-col gap-4">
                     <div>
                         <label class="block font-bold mb-2">Role<span class="text-red-500">*</span></label>
-                        <AutoComplete v-model="createForm.role" :suggestions="roleSuggestions" optionLabel="name" placeholder="Search and select role..." :loading="roleLoading" @complete="searchRole" :disabled="createLoading" display="chip" fluid />
+                        <AutoComplete
+                            v-model="createForm.role"
+                            :suggestions="roleSuggestions"
+                            optionLabel="name"
+                            placeholder="Search and select role..."
+                            :loading="roleLoading"
+                            @complete="searchRole"
+                            :disabled="createLoading"
+                            :input-class="{ 'p-invalid': roleError }"
+                            @item-select="clearRoleError"
+                            display="chip"
+                            fluid
+                        />
                     </div>
                     <div>
                         <label class="block font-bold mb-2">Permission<span class="text-red-500">*</span></label>
@@ -455,6 +506,8 @@ async function deleteRolePermission() {
                             :loading="permissionLoading"
                             @complete="searchPermission"
                             :disabled="createLoading"
+                            :input-class="{ 'p-invalid': permissionError }"
+                            @item-select="clearPermissionError"
                             display="chip"
                             fluid
                         />
@@ -481,7 +534,6 @@ async function deleteRolePermission() {
                             <label for="can_details">Can Details</label>
                         </div>
                     </div>
-                    <div v-if="createError" class="text-red-500 text-sm">{{ createError }}</div>
                 </div>
                 <template #footer>
                     <Button label="Cancel" icon="pi pi-times" outlined severity="secondary" @click="showCreateDialog = false" :disabled="createLoading" />
@@ -500,6 +552,8 @@ async function deleteRolePermission() {
                             :loading="editRoleLoading"
                             @complete="searchEditRole"
                             :disabled="editLoading"
+                            :input-class="{ 'p-invalid': editRoleError }"
+                            @item-select="clearEditRoleError"
                             display="chip"
                             fluid
                         />
@@ -514,6 +568,8 @@ async function deleteRolePermission() {
                             :loading="editPermissionLoading"
                             @complete="searchEditPermission"
                             :disabled="editLoading"
+                            :input-class="{ 'p-invalid': editPermissionError }"
+                            @item-select="clearEditPermissionError"
                             display="chip"
                             fluid
                         />
@@ -540,7 +596,6 @@ async function deleteRolePermission() {
                             <label for="edit_can_details">Can Details</label>
                         </div>
                     </div>
-                    <div v-if="editError" class="text-red-500 text-sm">{{ editError }}</div>
                 </div>
                 <template #footer>
                     <Button label="Cancel" icon="pi pi-times" outlined severity="secondary" @click="showEditDialog = false" :disabled="editLoading" />

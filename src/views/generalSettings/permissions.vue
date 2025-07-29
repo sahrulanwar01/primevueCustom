@@ -131,38 +131,35 @@ function onSubmenuSelect(event) {
 }
 
 async function submitCreatePermission() {
-    // Validasi form
+    let hasError = false;
     if (!createForm.value.name) {
         nameError.value = true;
-        return;
+        hasError = true;
     }
     if (!createForm.value.description) {
         descriptionError.value = true;
-        return;
+        hasError = true;
     }
-
     const hasMenu = !!selectedMenu.value;
     const hasSubmenu = !!selectedSubmenu.value;
-
-    // Validasi: Harus pilih salah satu
     if (!hasMenu && !hasSubmenu) {
         menuCodeError.value = true;
         submenuCodeError.value = true;
         createError.value = 'Pilih salah satu: Menu atau Sub Menu!';
-        return;
+        hasError = true;
     }
-
-    // Tidak boleh dua-duanya terisi
     if (hasMenu && hasSubmenu) {
         createError.value = 'Hanya boleh memilih salah satu: Menu atau Sub Menu!';
-        return;
+        hasError = true;
     }
+    if (hasError) return;
 
     createLoading.value = true;
-    nameError.value = false;
-    descriptionError.value = false;
-    menuCodeError.value = false;
-    submenuCodeError.value = false;
+    createError.value = '';
+    // nameError.value = false;
+    // descriptionError.value = false;
+    // menuCodeError.value = false;
+    // submenuCodeError.value = false;
 
     // Build payload hanya dengan field yang diisi
     const payload = {
@@ -178,7 +175,7 @@ async function submitCreatePermission() {
         fetchPermissions(); // Refresh data setelah create
     } catch (e) {
         const msg = e?.response?.data?.message || 'Failed to create permission.';
-        console.error('Error creating permission:', e);
+        createError.value = msg;
     } finally {
         createLoading.value = false;
     }
@@ -211,6 +208,11 @@ async function openCreateDialog() {
     selectedMenu.value = null;
     selectedSubmenu.value = null;
     showCreateDialog.value = true;
+    nameError.value = false;
+    descriptionError.value = false;
+    menuCodeError.value = false;
+    submenuCodeError.value = false;
+    createError.value = '';
 }
 
 watch(
@@ -263,6 +265,11 @@ async function openEditDialog(permission) {
         editSelectedMenu.value = data.menu_code ? { name: permission.menu_name, code: data.menu_code } : null;
         editSelectedSubmenu.value = data.submenu_code ? { name: permission.subMenu_name, code: data.submenu_code } : null;
         showEditDialog.value = true;
+        editNameError.value = false;
+        editDescriptionError.value = false;
+        editMenuCodeError.value = false;
+        editSubmenuCodeError.value = false;
+        editError.value = '';
     } catch (e) {
         editError.value = e?.response?.data?.message || 'Failed to fetch permission detail.';
         console.error('Error fetching permission detail:', e);
@@ -273,13 +280,14 @@ async function openEditDialog(permission) {
 
 // Submit edit
 async function submitEditPermission() {
+    let hasError = false;
     if (!editForm.value.name) {
         editNameError.value = true;
-        return;
+        hasError = true;
     }
     if (!editForm.value.description) {
         editDescriptionError.value = true;
-        return;
+        hasError = true;
     }
     const hasMenu = !!editSelectedMenu.value;
     const hasSubmenu = !!editSelectedSubmenu.value;
@@ -287,17 +295,19 @@ async function submitEditPermission() {
         editMenuCodeError.value = true;
         editSubmenuCodeError.value = true;
         editError.value = 'Pilih salah satu: Menu atau Sub Menu!';
-        return;
+        hasError = true;
     }
     if (hasMenu && hasSubmenu) {
         editError.value = 'Hanya boleh memilih salah satu: Menu atau Sub Menu!';
-        return;
+        hasError = true;
     }
+    if (hasError) return;
+
     editLoading.value = true;
-    editNameError.value = false;
-    editDescriptionError.value = false;
-    editMenuCodeError.value = false;
-    editSubmenuCodeError.value = false;
+    // editNameError.value = false;
+    // editDescriptionError.value = false;
+    // editMenuCodeError.value = false;
+    // editSubmenuCodeError.value = false;
 
     // Build payload hanya dengan field yang diisi
     const payload = {
@@ -474,13 +484,13 @@ async function deletePermission() {
                             placeholder="Search and select menu..."
                             :disabled="createLoading || !!selectedSubmenu"
                             :loading="menuLoading"
-                            :class="{ 'p-invalid': menuCodeError && !selectedSubmenu }"
+                            :input-class="{ 'p-invalid': menuCodeError && !selectedSubmenu }"
                             @complete="searchMenu"
                             @select="onMenuSelect"
-                            @input="clearMenuCodeError"
                             display="chip"
                             fluid
                         />
+                        <div v-if="menuCodeError && !selectedSubmenu" class="text-red-500 text-xs mt-1">Menu wajib dipilih jika tidak memilih Sub Menu.</div>
                     </div>
                     <div>
                         <label for="permission-submenu-code" class="block font-bold mb-2">Sub Menu<span class="text-red-500">*</span></label>
@@ -492,13 +502,13 @@ async function deletePermission() {
                             placeholder="Search and select submenu..."
                             :disabled="createLoading || !!selectedMenu"
                             :loading="submenuLoading"
-                            :class="{ 'p-invalid': submenuCodeError && !selectedMenu }"
+                            :input-class="{ 'p-invalid': submenuCodeError && !selectedMenu }"
                             @complete="searchSubmenu"
                             @select="onSubmenuSelect"
-                            @input="clearSubmenuCodeError"
                             display="chip"
                             fluid
                         />
+                        <div v-if="submenuCodeError && !selectedMenu" class="text-red-500 text-xs mt-1">Sub Menu wajib dipilih jika tidak memilih Menu.</div>
                     </div>
                 </div>
                 <template #footer>
@@ -526,7 +536,7 @@ async function deletePermission() {
                             placeholder="Search and select menu..."
                             :disabled="editLoading || !!editSelectedSubmenu"
                             :loading="menuLoading"
-                            :class="{ 'p-invalid': editMenuCodeError && !editSelectedSubmenu }"
+                            :input-class="{ 'p-invalid': editMenuCodeError && !editSelectedSubmenu }"
                             @complete="searchMenu"
                             @select="
                                 (e) => {
@@ -552,7 +562,7 @@ async function deletePermission() {
                             placeholder="Search and select submenu..."
                             :disabled="editLoading || !!editSelectedMenu"
                             :loading="submenuLoading"
-                            :class="{ 'p-invalid': editSubmenuCodeError && !editSelectedMenu }"
+                            :input-class="{ 'p-invalid': editSubmenuCodeError && !editSelectedMenu }"
                             @complete="searchSubmenu"
                             @select="
                                 (e) => {

@@ -1,6 +1,7 @@
 <script setup>
 import MenusService from '@/service/menuManagement/MenuService';
 import SubMenusService from '@/service/menuManagement/SubMenuService';
+import AutoComplete from 'primevue/autocomplete';
 import Button from 'primevue/button';
 import Column from 'primevue/column';
 import DataTable from 'primevue/datatable';
@@ -25,7 +26,7 @@ const permissions = ref({
     can_delete: false
 });
 const showCreateDialog = ref(false);
-const createForm = ref({ name: '', menu_code: '', status: 'ACTIVE' });
+const createForm = ref({ name: '', menu_code: null, status: 'ACTIVE' });
 const createLoading = ref(false);
 const createError = ref('');
 const nameError = ref(false);
@@ -45,8 +46,11 @@ const statusOptions = [
 ];
 
 // Menu search functionality
-const menuOptions = ref([]);
+// const menuOptions = ref([]);
+// const menuLoading = ref(false);
+const menuSuggestions = ref([]);
 const menuLoading = ref(false);
+// const selectedMenu = ref(null);
 
 // Function to get status styling
 function getStatusClass(status) {
@@ -78,29 +82,34 @@ function delay(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// Fetch menu options for dropdown
-async function fetchMenuOptions(searchTerm = '') {
+// Function to search menu options (autocomplete)
+async function searchMenu(event) {
+    const query = event.query?.toLowerCase() || '';
     menuLoading.value = true;
     try {
-        const res = await MenusService.getMenus({ page: 1, limit: 100, search: searchTerm });
+        const res = await MenusService.getMenus({ page: 1, limit: 100, search: query });
         const responseData = res.data || res;
         const menus = Array.isArray(responseData.data) ? responseData.data : [];
-
-        menuOptions.value = menus.map((menu) => ({
-            label: menu.name,
-            value: menu.menu_code
+        menuSuggestions.value = menus.map((menu) => ({
+            name: menu.name,
+            code: menu.menu_code
         }));
     } catch (error) {
-        console.error('Error fetching menu options:', error);
-        menuOptions.value = [];
+        console.error('Error fetching menu suggestions:', error);
+        menuSuggestions.value = [];
     } finally {
         menuLoading.value = false;
     }
 }
 
-// Handle dropdown filter
-function onMenuFilter(event) {
-    fetchMenuOptions(event.value);
+// Handle menu select
+function onMenuSelect() {
+    menuCodeError.value = false;
+}
+
+function onMenuClear() {
+    createForm.value.menu_code = null;
+    menuCodeError.value = true;
 }
 
 async function fetchSubMenus() {
@@ -127,7 +136,7 @@ async function fetchSubMenus() {
 
 onMounted(() => {
     fetchSubMenus();
-    fetchMenuOptions(); // Load initial menu options
+    // Tidak perlu fetchMenuOptions, autocomplete akan fetch sendiri
 });
 
 function onSearchInput(e) {
@@ -178,31 +187,35 @@ function confirmDeleteSubMenu(subMenu) {
 }
 
 async function openCreateDialog() {
-    createForm.value = { name: '', menu_code: '', status: 'ACTIVE' };
+    createForm.value = { name: '', menu_code: null, status: 'ACTIVE' };
     createError.value = '';
     nameError.value = false;
     menuCodeError.value = false;
+    // selectedMenu.value = null;
     showCreateDialog.value = true;
-    await fetchMenuOptions();
+    // Tidak perlu fetchMenuOptions, autocomplete akan fetch sendiri
 }
 
 async function submitCreateSubMenu() {
+    let hasError = false;
     if (!createForm.value.name) {
         nameError.value = true;
-        return;
+        hasError = true;
     }
-    if (!createForm.value.menu_code) {
+    if (!createForm.value.menu_code || typeof createForm.value.menu_code !== 'object' || !createForm.value.menu_code.code) {
         menuCodeError.value = true;
-        return;
+        hasError = true;
     }
+    if (hasError) return;
+
     createLoading.value = true;
     createError.value = '';
-    nameError.value = false;
-    menuCodeError.value = false;
+    // nameError.value = false;
+    // menuCodeError.value = false;
     try {
         const res = await SubMenusService.createSubMenu({
             name: createForm.value.name,
-            menu_code: createForm.value.menu_code,
+            menu_code: createForm.value.menu_code.code,
             status: createForm.value.status
         });
         showCreateDialog.value = false;
@@ -389,18 +402,18 @@ async function deleteSubMenu() {
             <div class="flex flex-col gap-4">
                 <div>
                     <label for="menu-select" class="block font-bold mb-2">Menu<span class="text-red-500">*</span></label>
-                    <Dropdown
+                    <AutoComplete
                         id="menu-select"
                         v-model="createForm.menu_code"
-                        :options="menuOptions"
-                        optionLabel="label"
-                        optionValue="value"
+                        :suggestions="menuSuggestions"
+                        optionLabel="name"
                         placeholder="Search and select menu..."
-                        :disabled="createLoading || menuLoading"
-                        :class="{ 'p-invalid': menuCodeError }"
+                        :disabled="createLoading"
                         :loading="menuLoading"
-                        filter
-                        @filter="onMenuFilter"
+                        :input-class="{ 'p-invalid': menuCodeError }"
+                        @complete="searchMenu"
+                        @item-select="onMenuSelect"
+                        @clear="onMenuClear"
                         fluid
                     />
                 </div>

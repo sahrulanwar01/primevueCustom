@@ -22,17 +22,22 @@ export function showToast({ severity = 'info', summary = '', detail = '', life =
 export function showResponseToast(response, fallback = 'Operation completed') {
     if (!toastInstance || !autoToastEnabled) return;
 
+    let detail = response?.message || fallback;
+    if (Array.isArray(detail)) {
+        detail = detail.join(', ');
+    }
+
     if (response?.statusCode === 200 || response?.success) {
         showToast({
             severity: 'success',
             summary: 'Success',
-            detail: response?.message || fallback
+            detail
         });
     } else {
         showToast({
             severity: 'error',
             summary: 'Error',
-            detail: response?.message || fallback
+            detail
         });
     }
 }

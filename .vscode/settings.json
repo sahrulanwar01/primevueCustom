@@ -21,5 +21,6 @@
         "editor.formatOnSave": true
     },
     "diffEditor.codeLens": false,
-    "files.eol": "auto"
+    "files.eol": "auto",
+    "editor.codeActions.triggerOnFocusChange": true
 }

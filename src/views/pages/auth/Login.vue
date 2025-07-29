@@ -117,7 +117,7 @@ const handleLogin = async () => {
                     </div>
 
                     <!-- Form -->
-                    <div>
+                    <form @submit.prevent="handleLogin">
                         <label for="email" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2"> Email <span class="text-red-500">*</span> </label>
                         <InputText id="email" v-model="email" type="email" placeholder="Email address" class="w-full md:w-[30rem] mb-2" :class="{ 'p-invalid': emailError }" @input="clearEmailError" />
 
@@ -125,11 +125,11 @@ const handleLogin = async () => {
                         <Password id="password" v-model="password" placeholder="Password" :toggleMask="true" :feedback="false" class="mb-2" :inputClass="{ 'p-invalid': passwordError }" fluid @input="clearPasswordError" />
 
                         <div class="flex justify-between items-center mt-2 mb-8">
-                            <span class="ml-1 font-medium cursor-pointer">Forgot password?</span>
+                            <RouterLink to="/auth/forgot-password" class="ml-1 font-medium text-primary-600 hover:underline">Forgot password?</RouterLink>
                         </div>
 
-                        <Button :label="isLoading ? 'Loading...' : 'Sign In'" class="w-full" @click="handleLogin" :disabled="isLoading" />
-                    </div>
+                        <Button type="submit" :label="isLoading ? 'Loading...' : 'Sign In'" class="w-full" :disabled="isLoading" />
+                    </form>
                 </div>
             </div>
         </div>

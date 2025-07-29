@@ -10,7 +10,7 @@ const AuthService = {
         try {
             const response = await apiClient.get('/auth/me', { withCredentials: true });
             // console.log('response ME', response);
-            return response.data; // ✅ KEMBALIKAN DATA, BUKAN BOOLEAN
+            return response.data;
         } catch (e) {
             console.error('Error in AuthService.me():', e);
             return null;
@@ -23,6 +23,14 @@ const AuthService = {
     async logout(token) {
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
         const response = await apiClient.post('/auth/logout', {}, { headers, withCredentials: true });
+        return response.data;
+    },
+    async forgotPassword(email) {
+        const response = await apiClient.post('/auth/forgot-password', { email });
+        return response.data;
+    },
+    async resetPassword(token, newPassword) {
+        const response = await apiClient.post('/auth/reset-password', { token, newPassword });
         return response.data;
     }
 };

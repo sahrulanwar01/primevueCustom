@@ -57,6 +57,23 @@ const originalMenu = [
                 ]
             },
             {
+                label: 'Template Manager',
+                icon: 'pi pi-wrench',
+                to: '/template-management',
+                items: [
+                    {
+                        label: 'Template',
+                        icon: 'pi pi-circle-off',
+                        to: '/template-management/template'
+                    },
+                    {
+                        label: 'Template Event',
+                        icon: 'pi pi-circle-off',
+                        to: '/template-management/template-event'
+                    }
+                ]
+            },
+            {
                 label: 'Website Settings',
                 icon: 'pi pi-globe',
                 to: '/website-settings',

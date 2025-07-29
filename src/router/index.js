@@ -81,6 +81,11 @@ const router = createRouter({
             component: () => import('@/views/pages/auth/Login.vue')
         },
         {
+            path: '/auth/forgot-password',
+            name: 'forgot-password',
+            component: () => import('@/views/pages/auth/ForgotPassword.vue')
+        },
+        {
             path: '/auth/access',
             name: 'accessDenied',
             component: () => import('@/views/pages/auth/Access.vue')
@@ -89,6 +94,11 @@ const router = createRouter({
             path: '/auth/error',
             name: 'error',
             component: () => import('@/views/pages/auth/Error.vue')
+        },
+        {
+            path: '/auth/reset-password',
+            name: 'ResetPassword',
+            component: () => import('@/views/pages/auth/ResetPassword.vue')
         },
         {
             path: '/user-management',
@@ -110,6 +120,7 @@ const router = createRouter({
                 }
             ]
         },
+        // Menu Management
         {
             path: '/menu-management',
             name: 'menu-management',
@@ -126,6 +137,27 @@ const router = createRouter({
                     path: 'sub-menus',
                     name: 'menu-management-submenus',
                     component: () => import('@/views/menuManagement/SubMenus.vue'),
+                    meta: { requiresAuth: true }
+                }
+            ]
+        },
+        // Template Management
+        {
+            path: '/template-management',
+            name: 'template-management',
+            component: AppLayout,
+            meta: { requiresAuth: true },
+            children: [
+                {
+                    path: 'template',
+                    name: 'template-management-template',
+                    component: () => import('@/views/templateManagement/template.vue'),
+                    meta: { requiresAuth: true }
+                },
+                {
+                    path: 'template-event',
+                    name: 'template-management-template-event',
+                    component: () => import('@/views/templateManagement/templateEvent.vue'),
                     meta: { requiresAuth: true }
                 }
             ]

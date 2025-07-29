@@ -52,7 +52,8 @@ function itemClick(event, item) {
         return;
     }
 
-    if ((item.to || item.url) && (layoutState.staticMenuMobileActive || layoutState.overlayMenuActive)) {
+    // Ubah: hanya tutup menu jika tidak punya submenu
+    if ((item.to || item.url) && !item.items && (layoutState.staticMenuMobileActive || layoutState.overlayMenuActive)) {
         toggleMenu();
     }
 
