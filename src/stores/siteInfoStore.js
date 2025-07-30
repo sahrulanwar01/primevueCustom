@@ -19,6 +19,7 @@ export const useSiteInfoStore = defineStore('siteInfo', {
         getSiteName: (state) => state.siteInfo?.site_name,
         getFavicon: (state) => state.siteInfo?.favicon,
         getSiteLogo: (state) => state.siteInfo?.site_logo || null,
+        getLoginImage: (state) => state.siteInfo?.img_login || null,
         getSiteDescription: (state) => state.siteInfo?.site_description || '',
         getContactEmail: (state) => state.siteInfo?.contact_email || '',
         getPhone: (state) => state.siteInfo?.phone || '',

@@ -24,7 +24,7 @@ const toast = useToast();
 
 /* === Site Info Store === */
 const siteInfoStore = useSiteInfoStore();
-const { getSiteLogo } = storeToRefs(siteInfoStore);
+const { getLoginImage } = storeToRefs(siteInfoStore);
 
 // Helper untuk bikin URL lengkap dari path relatif (copy dari store)
 function buildFullUrl(path) {
@@ -106,10 +106,10 @@ const handleLogin = async () => {
                 <div class="w-full bg-surface-0 dark:bg-surface-900 py-20 px-8 sm:px-20 rounded-[53px]">
                     <!-- Logo dan Heading -->
                     <div class="text-center mb-8">
-                        <!-- Site Logo -->
+                        <!-- Login Image atau Site Logo sebagai fallback -->
                         <div class="app-logo mb-4">
-                            <template v-if="getSiteLogo">
-                                <img :src="buildFullUrl(getSiteLogo)" alt="Site Logo" class="site-logo" />
+                            <template v-if="getLoginImage">
+                                <img :src="buildFullUrl(getLoginImage)" alt="Site Logo" class="site-logo" />
                             </template>
                         </div>
                         <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">Welcome to PrimeLand!</div>

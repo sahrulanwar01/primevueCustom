@@ -13,6 +13,7 @@ const info = ref({
     phone: '',
     address: '',
     favicon: '',
+    img_login: '',
     site_logo: '',
     site_name: '',
     contact_email: '',
@@ -21,6 +22,7 @@ const info = ref({
 
 const faviconPreview = ref('');
 const logoPreview = ref('');
+const loginImagePreview = ref('');
 const loading = ref(false);
 const permissions = ref({
     can_create: false,
@@ -51,6 +53,7 @@ async function fetchSiteInfo() {
                 phone: siteData.phone || '',
                 address: siteData.address || '',
                 favicon: siteData.favicon || '',
+                img_login: siteData.img_login || '',
                 site_logo: siteData.site_logo || '',
                 site_name: siteData.site_name || '',
                 contact_email: siteData.contact_email || '',
@@ -60,6 +63,7 @@ async function fetchSiteInfo() {
             // Tambahkan base URL agar bisa di-preview
             faviconPreview.value = siteData.favicon ? `${config.API_BASE_URL}${siteData.favicon}` : '';
             logoPreview.value = siteData.site_logo ? `${config.API_BASE_URL}${siteData.site_logo}` : '';
+            loginImagePreview.value = siteData.img_login ? `${config.API_BASE_URL}${siteData.img_login}` : '';
         }
         if (response.data.permissions) {
             permissions.value = response.data.permissions;
@@ -84,6 +88,9 @@ function handleFileChange(event, type) {
             } else if (type === 'logo') {
                 logoPreview.value = reader.result;
                 info.value.site_logo = file;
+            } else if (type === 'login') {
+                loginImagePreview.value = reader.result;
+                info.value.img_login = file;
             }
         };
         reader.readAsDataURL(file);
@@ -137,6 +144,10 @@ async function saveInfo() {
 
         if (info.value.site_logo instanceof File) {
             formData.append('site_logo', info.value.site_logo);
+        }
+
+        if (info.value.img_login instanceof File) {
+            formData.append('img_login', info.value.img_login);
         }
 
         await SiteInfoService.updateSiteInfo(formData);
@@ -200,7 +211,7 @@ onMounted(() => {
                 </div>
             </div>
 
-            <div class="mb-3">
+            <div class="mb-5">
                 <label class="font-bold block mb-2">Description<span class="text-red-500">*</span></label>
                 <template v-if="loading">
                     <Skeleton height="2rem" width="100%" borderRadius="8px" />
@@ -212,7 +223,7 @@ onMounted(() => {
 
             <div class="flex gap-4 mb-4">
                 <!-- Favicon Upload -->
-                <div class="w-1/2">
+                <div class="w-1/3">
                     <label class="font-bold block mb-2">Favicon<span class="text-red-500">*</span></label>
                     <template v-if="loading">
                         <Skeleton height="70px" width="70px" borderRadius="8px" />
@@ -228,7 +239,7 @@ onMounted(() => {
                 </div>
 
                 <!-- Site Logo Upload -->
-                <div class="w-1/2">
+                <div class="w-1/3">
                     <label class="font-bold block mb-2">Site Logo<span class="text-red-500">*</span></label>
                     <template v-if="loading">
                         <Skeleton height="70px" width="70px" borderRadius="8px" />
@@ -238,6 +249,22 @@ onMounted(() => {
                         <div v-if="logoPreview" class="relative inline-block m-1">
                             <a :href="logoPreview" data-fancybox="siteinfo-img" data-caption="Logo" tabindex="0">
                                 <img :src="logoPreview" alt="Logo Preview" class="hover-image" style="width: 70px; height: 70px; object-fit: cover; border-radius: 8px; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1)" />
+                            </a>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Login Image Upload -->
+                <div class="w-1/3">
+                    <label class="font-bold block mb-2">Login Image<span class="text-red-500">*</span></label>
+                    <template v-if="loading">
+                        <Skeleton height="70px" width="70px" borderRadius="8px" />
+                    </template>
+                    <template v-else>
+                        <input type="file" accept="image/*" class="form-control w-full mb-2" @change="(e) => handleFileChange(e, 'login')" />
+                        <div v-if="loginImagePreview" class="relative inline-block m-1">
+                            <a :href="loginImagePreview" data-fancybox="siteinfo-img" data-caption="Login Image" tabindex="0">
+                                <img :src="loginImagePreview" alt="Login Image Preview" class="hover-image" style="width: 70px; height: 70px; object-fit: cover; border-radius: 8px; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1)" />
                             </a>
                         </div>
                     </template>
