@@ -120,6 +120,27 @@ const router = createRouter({
                 }
             ]
         },
+        // General Master Data
+        {
+            path: '/general-master-data',
+            name: 'general-master-data',
+            component: AppLayout,
+            meta: { requiresAuth: true },
+            children: [
+                {
+                    path: 'position',
+                    name: 'general-master-data-position',
+                    component: () => import('@/views/generalMasterData/position.vue'),
+                    meta: { requiresAuth: true }
+                },
+                {
+                    path: 'user-position',
+                    name: 'general-master-data-user-position',
+                    component: () => import('@/views/generalMasterData/userPosition.vue'),
+                    meta: { requiresAuth: true }
+                }
+            ]
+        },
         // Menu Management
         {
             path: '/menu-management',

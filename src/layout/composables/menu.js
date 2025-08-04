@@ -40,6 +40,23 @@ const originalMenu = [
                 ]
             },
             {
+                label: 'General Master Data',
+                icon: 'pi pi-fw pi-database',
+                to: '/general-master-data',
+                items: [
+                    {
+                        label: 'Position',
+                        icon: 'pi pi-circle-off',
+                        to: '/general-master-data/position'
+                    },
+                    {
+                        label: 'User Position',
+                        icon: 'pi pi-circle-off',
+                        to: '/general-master-data/user-position'
+                    }
+                ]
+            },
+            {
                 label: 'Menu Management',
                 icon: 'pi pi-fw pi-bars',
                 to: '/menu-management',

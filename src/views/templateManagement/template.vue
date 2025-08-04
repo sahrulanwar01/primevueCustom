@@ -9,13 +9,18 @@ import Dropdown from 'primevue/dropdown';
 import InputText from 'primevue/inputtext';
 import Skeleton from 'primevue/skeleton';
 import { computed, onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+// ===== ROUTER & ROUTE =====
+const route = useRoute();
+const router = useRouter();
 
 const templates = ref([]);
 const totalRecords = ref(0);
 const loading = ref(false);
-const page = ref(1);
-const limit = ref(10);
-const search = ref('');
+const page = ref(parseInt(route.query.page) || 1);
+const limit = ref(parseInt(route.query.limit) || 10);
+const search = ref(route.query.search || '');
 const permissions = ref({
     can_create: false,
     can_update: false,
@@ -342,11 +347,22 @@ onMounted(() => {
     fetchTemplates();
 });
 
+// ===== URL UPDATE FUNCTIONS =====
+function updateURL() {
+    const query = {};
+    if (page.value > 1) query.page = page.value.toString();
+    if (limit.value !== 10) query.limit = limit.value.toString();
+    if (search.value.trim()) query.search = search.value.trim();
+
+    router.replace({ query });
+}
+
 watch(
     search,
     (val, oldVal) => {
         if (val !== oldVal) {
             page.value = 1;
+            updateURL();
             fetchTemplates();
         }
     },
@@ -356,6 +372,7 @@ watch(
 function onPage(event) {
     page.value = event.page + 1;
     limit.value = event.rows;
+    updateURL();
     fetchTemplates();
 }
 
@@ -417,6 +434,7 @@ function clearEditStatusError() {
                 @page="onPage"
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} templates"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                :emptyMessage="loading ? '' : 'No data available'"
             >
                 <div class="flex flex-wrap items-center justify-between w-full mb-6 mt-6">
                     <div class="flex-1 flex items-center">
@@ -511,10 +529,17 @@ function clearEditStatusError() {
                 </Column>
                 <Column v-if="permissions.can_update || permissions.can_delete" header="Actions" style="min-width: 8rem">
                     <template #body="slotProps">
-                        <Button v-if="permissions.can_update" icon="pi pi-pencil" outlined rounded class="mr-2" @click="openEditDialog(slotProps.data)" />
-                        <Button v-if="permissions.can_delete" icon="pi pi-trash" outlined rounded severity="danger" @click="openDeleteDialog(slotProps.data)" />
+                        <Button v-if="permissions.can_update" icon="pi pi-pencil" size="small" outlined rounded class="mr-2" @click="openEditDialog(slotProps.data)" />
+                        <Button v-if="permissions.can_delete" icon="pi pi-trash" size="small" outlined rounded severity="danger" @click="openDeleteDialog(slotProps.data)" />
                     </template>
                 </Column>
+
+                <!-- Empty State Template -->
+                <template #empty>
+                    <div v-if="!loading" class="flex flex-col items-center justify-center py-12">
+                        <img src="/noData.png" alt="No Data" style="width: 25%" class="mb-6 opacity-60" />
+                    </div>
+                </template>
             </DataTable>
         </div>
         <Dialog v-model:visible="showCreateDialog" header="Create Template" :modal="true" :style="{ width: '500px' }">

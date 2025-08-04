@@ -12,13 +12,18 @@ import InputIcon from 'primevue/inputicon';
 import InputText from 'primevue/inputtext';
 import Skeleton from 'primevue/skeleton';
 import { onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+// ===== ROUTER & ROUTE =====
+const route = useRoute();
+const router = useRouter();
 
 const rolePermissionsList = ref([]);
 const totalRecords = ref(0);
 const loading = ref(false);
-const page = ref(1);
-const limit = ref(10);
-const search = ref('');
+const page = ref(parseInt(route.query.page) || 1);
+const limit = ref(parseInt(route.query.limit) || 10);
+const search = ref(route.query.search || '');
 
 // State for create dialog
 const showCreateDialog = ref(false);
@@ -109,11 +114,22 @@ onMounted(() => {
     fetchRolePermissions();
 });
 
+// ===== URL UPDATE FUNCTIONS =====
+function updateURL() {
+    const query = {};
+    if (page.value > 1) query.page = page.value.toString();
+    if (limit.value !== 10) query.limit = limit.value.toString();
+    if (search.value.trim()) query.search = search.value.trim();
+
+    router.replace({ query });
+}
+
 watch(
     search,
     (val, oldVal) => {
         if (val !== oldVal) {
             page.value = 1;
+            updateURL();
             fetchRolePermissions();
         }
     },
@@ -123,6 +139,7 @@ watch(
 function onPage(event) {
     page.value = event.page + 1;
     limit.value = event.rows;
+    updateURL();
     fetchRolePermissions();
 }
 
@@ -367,6 +384,7 @@ async function deleteRolePermission() {
                 @page="onPage"
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} role permissions"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                :emptyMessage="loading ? '' : 'No data available'"
             >
                 <div class="flex flex-wrap items-center justify-between w-full mb-6 mt-6">
                     <div class="flex-1 flex items-center">
@@ -472,11 +490,18 @@ async function deleteRolePermission() {
                             <Skeleton height="2rem" width="60%" borderRadius="8px" />
                         </template>
                         <template v-else>
-                            <Button v-if="permissions.can_update" icon="pi pi-pencil" outlined rounded class="mr-2" @click="() => openEditDialog(slotProps.data)" />
-                            <Button v-if="permissions.can_delete" icon="pi pi-trash" outlined rounded severity="danger" @click="() => confirmDeleteRolePermission(slotProps.data)" />
+                            <Button v-if="permissions.can_update" icon="pi pi-pencil" size="small" outlined rounded class="mr-2" @click="() => openEditDialog(slotProps.data)" />
+                            <Button v-if="permissions.can_delete" icon="pi pi-trash" size="small" outlined rounded severity="danger" @click="() => confirmDeleteRolePermission(slotProps.data)" />
                         </template>
                     </template>
                 </Column>
+
+                <!-- Empty State Template -->
+                <template #empty>
+                    <div v-if="!loading" class="flex flex-col items-center justify-center py-12">
+                        <img src="/noData.png" alt="No Data" style="width: 25%" class="mb-6 opacity-60" />
+                    </div>
+                </template>
             </DataTable>
             <Dialog v-model:visible="showCreateDialog" header="Create Role Permission" :modal="true" :style="{ width: '400px' }">
                 <div class="flex flex-col gap-4">

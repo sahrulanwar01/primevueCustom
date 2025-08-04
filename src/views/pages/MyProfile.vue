@@ -28,7 +28,7 @@
                         <h2>{{ profile.name }}</h2>
                         <p>{{ profile.email }}</p>
                         <p>
-                            {{ role.name }} •
+                            {{ role.name }} • {{ position.name }}
                             <span v-if="profile.status === 'ACTIVE'" class="status-badge status-active">Active</span>
                             <span v-else-if="profile.status === 'INACTIVE'" class="status-badge status-inactive">Inactive</span>
                             <span v-else class="status-badge status-other">{{ profile.status }}</span>
@@ -258,6 +258,12 @@ const role = ref({
     name: ''
 });
 
+// Position data
+const position = ref({
+    position_code: '',
+    name: ''
+});
+
 // Status options for dropdown
 const statusOptions = ref(['ACTIVE', 'INACTIVE', 'SUSPENDED']);
 
@@ -453,6 +459,7 @@ async function loadProfileData() {
             // Update profile data
             Object.assign(profile.value, response.data.user);
             Object.assign(role.value, response.data.role);
+            Object.assign(position.value, response.data.position);
 
             // Set avatar preview with proper URL handling
             if (profile.value.photo) {

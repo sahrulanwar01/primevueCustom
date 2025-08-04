@@ -10,13 +10,18 @@ import InputIcon from 'primevue/inputicon';
 import InputText from 'primevue/inputtext';
 import Skeleton from 'primevue/skeleton';
 import { computed, onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+// ===== ROUTER & ROUTE =====
+const route = useRoute();
+const router = useRouter();
 
 const loggings = ref([]);
 const totalRecords = ref(0);
 const loading = ref(false);
-const page = ref(1);
-const limit = ref(50);
-const search = ref('');
+const page = ref(parseInt(route.query.page) || 1);
+const limit = ref(parseInt(route.query.limit) || 50);
+const search = ref(route.query.search || '');
 
 // Export modal state
 const showExportDialog = ref(false);
@@ -56,11 +61,22 @@ function onSearchInput(e) {
     page.value = 1;
 }
 
+// ===== URL UPDATE FUNCTIONS =====
+function updateURL() {
+    const query = {};
+    if (page.value > 1) query.page = page.value.toString();
+    if (limit.value !== 50) query.limit = limit.value.toString();
+    if (search.value.trim()) query.search = search.value.trim();
+
+    router.replace({ query });
+}
+
 watch(
     search,
     (val, oldVal) => {
         if (val !== oldVal) {
             page.value = 1;
+            updateURL();
             fetchLoggings();
         }
     },
@@ -70,6 +86,7 @@ watch(
 function onPage(event) {
     page.value = event.page + 1;
     limit.value = event.rows;
+    updateURL();
     fetchLoggings();
 }
 
@@ -155,6 +172,7 @@ async function exportLoggings() {
                 @page="onPage"
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} loggings"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                :emptyMessage="loading ? '' : 'No data available'"
             >
                 <div class="flex flex-wrap items-center justify-between w-full mb-6 mt-6">
                     <div class="flex-1 flex items-center">
@@ -235,6 +253,13 @@ async function exportLoggings() {
                         </template>
                     </template>
                 </Column>
+
+                <!-- Empty State Template -->
+                <template #empty>
+                    <div v-if="!loading" class="flex flex-col items-center justify-center py-12">
+                        <img src="/noData.png" alt="No Data" style="width: 25%" class="mb-6 opacity-60" />
+                    </div>
+                </template>
             </DataTable>
         </div>
 
