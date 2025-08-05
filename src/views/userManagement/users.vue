@@ -1019,7 +1019,7 @@ onMounted(fetchUsers);
                 <!-- Empty State Template -->
                 <template #empty>
                     <div v-if="!loading" class="flex flex-col items-center justify-center py-12">
-                        <img src="/noData.png" alt="No Data" style="width: 25%" class="mb-6 opacity-60" />
+                        <img src="/noData.png" alt="No Data" style="width: 25%" class="mb-6" />
                     </div>
                 </template>
             </DataTable>
