@@ -35,6 +35,24 @@ const UsersService = {
         // payload: { name, email, phone, role_code, photo, status }
         const response = await apiClient.patch(`/users/${user_code}`, payload, { withCredentials: true });
         return response.data;
+    },
+
+    async downloadTemplate() {
+        const response = await apiClient.get('/users/import-template', {
+            responseType: 'blob',
+            withCredentials: true
+        });
+        return response.data;
+    },
+
+    async importUsers(formData) {
+        const response = await apiClient.post('/users/import-users', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            },
+            withCredentials: true
+        });
+        return response.data;
     }
 };
 

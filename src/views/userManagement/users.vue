@@ -35,6 +35,7 @@ const permissions = ref({
 const showAddDialog = ref(false);
 const showDeleteDialog = ref(false);
 const showEditDialog = ref(false);
+const showImportDialog = ref(false);
 
 // ===== FORM DATA =====
 const addUserForm = ref({
@@ -98,6 +99,7 @@ const editFullAddressError = ref(false);
 const deleteLoading = ref(false);
 const editLoading = ref(false);
 const roleLoading = ref(false);
+const importLoading = ref(false);
 
 // ===== OTHER STATES =====
 const roleSuggestions = ref([]);
@@ -114,6 +116,7 @@ const districtLoading = ref(false);
 const villageSuggestions = ref([]);
 const villageLoading = ref(false);
 const isLoadingExistingData = ref(false);
+const importFile = ref(null);
 
 // ===== OPTIONS =====
 const statusOptions = [
@@ -625,6 +628,50 @@ function confirmEditUser(user) {
     }
 }
 
+async function downloadTemplate() {
+    try {
+        const blob = await usersService.downloadTemplate();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'user_import_template.xlsx';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('Error downloading template:', error);
+    }
+}
+
+async function onImportFileSelect(event) {
+    const file = event.files && event.files[0];
+    if (file) {
+        importFile.value = file;
+    }
+}
+
+async function submitImportUsers() {
+    if (!importFile.value) {
+        return;
+    }
+
+    importLoading.value = true;
+    try {
+        const formData = new FormData();
+        formData.append('file', importFile.value);
+
+        await usersService.importUsers(formData);
+        showImportDialog.value = false;
+        importFile.value = null;
+        fetchUsers();
+    } catch (error) {
+        console.error('Error importing users:', error);
+    } finally {
+        importLoading.value = false;
+    }
+}
+
 async function submitEditUser() {
     // Reset validation states
     editNameError.value = false;
@@ -917,7 +964,8 @@ onMounted(fetchUsers);
                             <InputText v-model="search" placeholder="Search..." @input="onSearchInput" />
                         </IconField>
                     </div>
-                    <div class="flex-1 flex justify-end">
+                    <div class="flex-1 flex justify-end gap-2">
+                        <Button v-if="permissions.can_create" label="Import" icon="pi pi-upload" outlined @click="showImportDialog = true" />
                         <Button v-if="permissions.can_create" label="Add" icon="pi pi-plus" @click="showAddDialog = true" />
                     </div>
                 </div>
@@ -1065,7 +1113,7 @@ onMounted(fetchUsers);
                 <div class="flex gap-4">
                     <div class="w-1/2">
                         <label for="user-status" class="block font-bold mb-2">Status<span class="text-red-500">*</span></label>
-                        <Dropdown id="user-status" v-model="addUserForm.status" :options="statusOptions" optionLabel="label" optionValue="value" placeholder="Pilih status" :class="{ 'p-invalid': statusError }" @change="clearStatusError" fluid />
+                        <Dropdown id="user-status" v-model="addUserForm.status" :options="statusOptions" optionLabel="label" optionValue="value" placeholder="Select status" :class="{ 'p-invalid': statusError }" @change="clearStatusError" fluid />
                     </div>
                     <div class="w-1/2">
                         <label for="user-province" class="block font-bold mb-2">Province</label>
@@ -1205,7 +1253,7 @@ onMounted(fetchUsers);
                             :options="statusOptions"
                             optionLabel="label"
                             optionValue="value"
-                            placeholder="Pilih status"
+                            placeholder="Select status"
                             :class="{ 'p-invalid': editStatusError }"
                             @change="clearEditStatusError"
                             fluid
@@ -1293,6 +1341,39 @@ onMounted(fetchUsers);
             <template #footer>
                 <Button label="Cancel" icon="pi pi-times" outlined severity="secondary" @click="closeEditDialog" :disabled="editLoading" />
                 <Button label="Save" icon="pi pi-check" @click="submitEditUser" :loading="editLoading" />
+            </template>
+        </Dialog>
+        <!-- Dialog Import Users -->
+        <Dialog v-model:visible="showImportDialog" header="Import Users" :modal="true" :style="{ width: '500px' }">
+            <div class="flex flex-col gap-4">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div class="flex items-start gap-3">
+                        <i class="pi pi-info-circle text-blue-600 mt-1"></i>
+                        <div>
+                            <h5 class="text-blue-800 font-semibold mb-2">Petunjuk Import Users</h5>
+                            <ol class="text-blue-700 text-sm space-y-1">
+                                <li>1. Download template Excel terlebih dahulu</li>
+                                <li>2. Isi data sesuai format yang ada di template</li>
+                                <li>3. Upload file Excel yang sudah diisi</li>
+                                <li>4. Pastikan format file adalah .xlsx atau .xls</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-center">
+                    <Button label="Download Template" icon="pi pi-download" outlined @click="downloadTemplate" class="w-full" />
+                </div>
+
+                <div>
+                    <label for="import-file" class="block font-bold mb-2">Upload File Excel<span class="text-red-500">*</span></label>
+                    <FileUpload mode="basic" name="file" accept=".xlsx,.xls" :maxFileSize="5000000" chooseLabel="Select File Excel" @select="onImportFileSelect" class="w-full" />
+                    <small class="text-500 block mt-2">Max 5MB. Format: XLSX, XLS</small>
+                </div>
+            </div>
+            <template #footer>
+                <Button label="Batal" icon="pi pi-times" outlined severity="secondary" @click="showImportDialog = false" :disabled="importLoading" />
+                <Button label="Import" icon="pi pi-upload" @click="submitImportUsers" :loading="importLoading" :disabled="!importFile" />
             </template>
         </Dialog>
     </div>
